@@ -1,3 +1,5 @@
+import vendorRoutes from "./routes/vendorRoutes.js";
+import rfqRoutes from "./routes/rfqRoutes.js";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -21,6 +23,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ---- routes ----
 app.use("/api/auth", authRoutes);
+app.use("/api/vendors", vendorRoutes);
+app.use("/api/rfq", rfqRoutes);
 
 // ---- test route ----
 app.get("/api/health", (req, res) => {
