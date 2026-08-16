@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Construction Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__grid"></div>
+  <div class="topbar__inner">
+    <div class="brand">
+      <span class="brand__mark">CIVIX</span>
+      <span class="brand__tag">Construction Marketplace</span>
+    </div>
+    <button class="city-pill" id="cityPillBtn">
+      <span class="city-pill__icon">📍</span>
+      <span id="currentCityLabel">All Cities</span>
+      <span class="city-pill__chevron">▾</span>
+    </button>
+    <a href="/customer-auth.html" class="btn btn--ghost-light" style="text-decoration:none; display:inline-flex; align-items:center;">Login</a>
+    <button class="btn btn--ghost-light" id="becomeVendorBtn">+ List your business</button>
+  </div>
+  <div class="city-dropdown" id="cityDropdown" hidden>
+    <button class="city-dropdown__item is-active" data-city="all">All Cities</button>
+    <button class="city-dropdown__item" data-city="Indore">Indore</button>
+    <button class="city-dropdown__item" data-city="Bhopal">Bhopal</button>
+    <button class="city-dropdown__item" data-city="Jabalpur">Jabalpur</button>
+    <button class="city-dropdown__item" data-city="Gwalior">Gwalior</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero__stripe"></div>
+  <div class="hero__inner">
+    <p class="hero__eyebrow">HARDWARE · MATERIALS · CONTRACTORS</p>
+    <h1 class="hero__title">Everything for your <span>construction site</span>,<br>sourced nearby.</h1>
+    <div class="searchbar">
+      <span class="searchbar__icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search cement, TMT steel, contractors, JCB…">
+    </div>
+  </div>
+</section>
+
+<nav class="categories" id="categories">
+  <button class="chip is-active" data-category="all"><span>🏗️</span>All</button>
+  <button class="chip" data-category="cement"><span>🏭</span>Cement</button>
+  <button class="chip" data-category="tmt_steel"><span>⛓️</span>TMT Steel</button>
+  <button class="chip" data-category="contractors"><span>👷</span>Contractors</button>
+  <button class="chip" data-category="machinery"><span>🚜</span>Machinery</button>
+  <button class="chip" data-category="plumbing_electrical"><span>🔧</span>Plumbing/Electrical</button>
+</nav>
+
+<main class="results">
+  <div class="results__head">
+    <h2 id="resultsTitle">All vendors</h2>
+    <span class="results__count" id="resultsCount"></span>
+  </div>
+  <div class="vendor-grid" id="vendorGrid"></div>
+  <div class="empty-state" id="emptyState" hidden>
+    <p>No vendors match that yet.</p>
+    <span>Post your requirement below — nearby suppliers will be notified.</span>
+  </div>
+</main>
+
+<button class="fab" id="postNeedFab"><span class="fab__plus">+</span> Post Site Need</button>
+
+<div class="modal-overlay" id="rfqOverlay" hidden>
+  <div class="modal">
+    <button class="modal__close" data-close="rfqOverlay">✕</button>
+    <p class="modal__eyebrow">BROADCAST TO NEARBY VENDORS</p>
+    <h3 class="modal__title">Post your site need</h3>
+    <form id="rfqForm">
+      <label>Material / service required
+        <input type="text" name="material" placeholder="e.g. 500 Bags Cement" required>
+      </label>
+      <label>Quantity
+        <input type="text" name="quantity" placeholder="e.g. 500 Bags" required>
+      </label>
+      <label>City
+        <select name="city" required>
+          <option value="Indore">Indore</option>
+          <option value="Bhopal">Bhopal</option>
+          <option value="Jabalpur">Jabalpur</option>
+          <option value="Gwalior">Gwalior</option>
+        </select>
+      </label>
+      <label>Site location
+        <input type="text" name="location" placeholder="e.g. Vijay Nagar, Indore" required>
+      </label>
+      <label>Contact phone
+        <input type="tel" name="phone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">Broadcast to Nearby Vendors</button>
+    </form>
+    <div class="modal__result" id="rfqResult" hidden></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="vendorOverlay" hidden>
+  <div class="modal">
+    <button class="modal__close" data-close="vendorOverlay">✕</button>
+    <p class="modal__eyebrow">JOIN THE DIRECTORY</p>
+    <h3 class="modal__title">List your business on Civix</h3>
+    <form id="vendorForm">
+      <label>Company name
+        <input type="text" name="companyName" required>
+      </label>
+      <label>Owner name
+        <input type="text" name="ownerName" required>
+      </label>
+      <label>Email
+        <input type="email" name="email" required>
+      </label>
+      <label>Password
+        <input type="password" name="password" required minlength="6">
+      </label>
+      <label>Phone
+        <input type="tel" name="phone" pattern="[0-9]{10}" required>
+      </label>
+      <label>Role
+        <select name="role" required>
+          <option value="Material Vendor">Material Vendor</option>
+          <option value="Contractor">Contractor</option>
+          <option value="Machinery Rental">Machinery Rental</option>
+          <option value="Service Provider">Service Provider</option>
+        </select>
+      </label>
+      <label>Category
+        <select name="category" required>
+          <option value="cement">🏭 Cement</option>
+          <option value="tmt_steel">⛓️ TMT Steel</option>
+          <option value="contractors">👷 Contractors</option>
+          <option value="machinery">🚜 Machinery</option>
+          <option value="plumbing_electrical">🔧 Plumbing/Electrical</option>
+        </select>
+      </label>
+      <label>City
+        <select name="city" required>
+          <option value="Indore">Indore</option>
+          <option value="Bhopal">Bhopal</option>
+          <option value="Jabalpur">Jabalpur</option>
+          <option value="Gwalior">Gwalior</option>
+        </select>
+      </label>
+      <label>Materials / services offered
+        <input type="text" name="materials" placeholder="e.g. Ultratech | Ambuja | ACC Cement">
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">Submit Listing</button>
+    </form>
+    <div class="modal__result" id="vendorResult" hidden></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer__grid"></div>
+  <p>CIVIX — built for builders, sourced locally.</p>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

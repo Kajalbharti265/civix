@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Customer Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+<style>
+  body{display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--steel-900);}
+  .box{background:#fff; padding:32px; border-radius:16px; width:100%; max-width:380px; box-shadow:var(--shadow-pop);}
+  .box h2{font-family:'Oswald',sans-serif; margin:0 0 4px;}
+  .box p.sub{color:var(--ink-600); font-size:13px; margin:0 0 20px;}
+  .box input, .box select{width:100%; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:14px; margin-bottom:12px;}
+  .box .err{color:#DC2626; font-size:13px; margin-top:8px;}
+  .box .err[hidden]{display:none;}
+  .box .ok{color:#166534; font-size:13px; margin-top:8px;}
+  .box .ok[hidden]{display:none;}
+  .switch{text-align:center; font-size:13px; color:var(--ink-600); margin-top:14px;}
+  .switch a{color:var(--signal-orange); font-weight:600; cursor:pointer; text-decoration:none;}
+  #signupFields[hidden]{display:none;}
+</style>
+</head>
+<body>
+<div class="box">
+  <p class="gate__eyebrow" id="formEyebrow">CIVIX</p>
+  <h2 id="formTitle">Login</h2>
+  <p class="sub" id="formSub">Welcome back</p>
+
+  <div id="signupFields" hidden>
+    <input type="text" id="name" placeholder="Full name">
+    <input type="tel" id="phone" placeholder="Phone number">
+    <select id="city">
+      <option value="Indore">Indore</option>
+      <option value="Bhopal">Bhopal</option>
+      <option value="Jabalpur">Jabalpur</option>
+      <option value="Gwalior">Gwalior</option>
+    </select>
+  </div>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button class="btn btn--primary btn--block" id="submitBtn">Login</button>
+
+  <p class="err" id="errBox" hidden></p>
+  <p class="ok" id="okBox" hidden></p>
+
+  <p class="switch">
+    <span id="switchText">Don't have an account?</span>
+    <a id="switchLink">Sign up</a>
+  </p>
+</div>
+
+<script src="/js/customer-auth.js"></script>
+</body>
+</html>

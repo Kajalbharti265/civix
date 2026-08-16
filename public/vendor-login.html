@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Vendor Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+<style>
+  body{display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--steel-900);}
+  .box{background:#fff; padding:32px; border-radius:16px; width:100%; max-width:360px; box-shadow:var(--shadow-pop);}
+  .box h2{font-family:'Oswald',sans-serif; margin:0 0 4px;}
+  .box p.sub{color:var(--ink-600); font-size:13px; margin:0 0 20px;}
+  .box input{width:100%; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:14px; margin-bottom:12px;}
+  .box .err{color:#DC2626; font-size:13px; margin-top:8px;}
+  .box .err[hidden]{display:none;}
+</style>
+</head>
+<body>
+<div class="box">
+  <p class="gate__eyebrow">CIVIX VENDOR</p>
+  <h2>Vendor Login</h2>
+  <p class="sub">Login to manage your listing</p>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button class="btn btn--primary btn--block" id="loginBtn">Login</button>
+  <p class="err" id="loginErr" hidden></p>
+</div>
+
+<script>
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const errBox = document.getElementById("loginErr");
+  errBox.hidden = true;
+
+  const res = await fetch("/api/auth/vendor/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    errBox.textContent = data.message || "Login failed";
+    errBox.hidden = false;
+    return;
+  }
+
+  localStorage.setItem("civix_vendor_token", data.session.access_token);
+  window.location.href = "/vendor-dashboard.html";
+});
+</script>
+</body>
+</html>

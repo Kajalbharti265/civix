@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Vendor Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+<style>
+  .dash{max-width:520px; margin:40px auto; padding:0 20px;}
+  .dash h1{font-family:'Oswald',sans-serif; font-size:24px;}
+  .dash form{background:#fff; padding:24px; border-radius:16px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:12px;}
+  .dash label{font-size:13px; font-weight:600; color:var(--ink-600); display:flex; flex-direction:column; gap:6px;}
+  .dash input, .dash select{border:1px solid var(--line); border-radius:10px; padding:11px; font-size:14px;}
+  .dash .result{margin-top:10px; padding:12px; border-radius:8px; background:#DCFCE7; color:#166534; font-size:14px;}
+  .dash .result[hidden]{display:none;}
+  .dash .logo-preview{width:80px; height:80px; border-radius:12px; object-fit:cover; background:var(--blueprint-50); border:1px solid var(--line);}
+</style>
+</head>
+<body>
+<div class="dash">
+  <h1>My Listing</h1>
+  <form id="profileForm">
+    <img class="logo-preview" id="logoPreview" src="" alt="Logo" hidden>
+    <label>Company Name <input type="text" name="company_name" id="company_name"></label>
+    <label>Owner Name <input type="text" name="owner_name" id="owner_name"></label>
+    <label>Phone <input type="tel" name="phone" id="phone"></label>
+    <label>Role
+      <select name="role" id="role">
+        <option value="Material Vendor">Material Vendor</option>
+        <option value="Contractor">Contractor</option>
+        <option value="Machinery Rental">Machinery Rental</option>
+        <option value="Service Provider">Service Provider</option>
+      </select>
+    </label>
+    <label>Category
+      <select name="category" id="category">
+        <option value="cement">🏭 Cement</option>
+        <option value="tmt_steel">⛓️ TMT Steel</option>
+        <option value="contractors">👷 Contractors</option>
+        <option value="machinery">🚜 Machinery</option>
+        <option value="plumbing_electrical">🔧 Plumbing/Electrical</option>
+      </select>
+    </label>
+    <label>City
+      <select name="city" id="city">
+        <option value="Indore">Indore</option>
+        <option value="Bhopal">Bhopal</option>
+        <option value="Jabalpur">Jabalpur</option>
+        <option value="Gwalior">Gwalior</option>
+      </select>
+    </label>
+    <label>Materials/Services <input type="text" name="materials" id="materials"></label>
+    <label>Logo <input type="file" name="logo" accept="image/*"></label>
+    <button type="submit" class="btn btn--primary btn--block">Save Changes</button>
+    <div class="result" id="result" hidden></div>
+  </form>
+</div>
+
+<script src="/js/vendor-dashboard.js"></script>
+</body>
+</html>

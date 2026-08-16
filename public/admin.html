@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate__box">
+    <p class="gate__eyebrow">CIVIX ADMIN</p>
+    <h2>Enter Admin Key</h2>
+    <input type="password" id="adminKeyInput" placeholder="Admin secret key">
+    <button class="btn btn--primary btn--block" id="unlockBtn">Unlock</button>
+    <p class="gate__error" id="gateError" hidden>Invalid key</p>
+  </div>
+</div>
+
+<div class="admin" id="adminPanel" hidden>
+  <header class="admin__header">
+    <h1>CIVIX <span>Admin</span></h1>
+    <div class="admin__tabs">
+      <button class="tab is-active" data-filter="pending">Pending Approval</button>
+      <button class="tab" data-filter="approved">Approved</button>
+      <button class="tab" data-filter="all">All Vendors</button>
+    </div>
+  </header>
+
+  <main class="admin__list" id="vendorList"></main>
+</div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
