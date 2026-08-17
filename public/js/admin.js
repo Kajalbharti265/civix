@@ -7,11 +7,12 @@ let currentFilter = "pending";
 
 // ---- gate/unlock ----
 $("#unlockBtn").addEventListener("click", async () => {
-  const key = $("#adminKeyInput").value.trim();
+  const key = $("#adminKeyInput").value.replace(/[^\x00-\x7F]/g, "").trim();
   if (!key) return;
 
   const res = await fetch("/api/vendors/admin/all", {
     headers: { "x-admin-key": key },
+    cache: "no-store",
   });
 
   if (res.status === 403) {
@@ -25,6 +26,7 @@ $("#unlockBtn").addEventListener("click", async () => {
   const data = await res.json();
   allVendors = data.vendors || [];
   renderList();
+  loadStats();
 });
 
 $("#adminKeyInput").addEventListener("keydown", (e) => {
@@ -96,8 +98,50 @@ $("#vendorList").addEventListener("click", async (e) => {
     const idx = allVendors.findIndex((v) => v.id === id);
     allVendors[idx] = data.vendor;
     renderList();
+    loadStats();
   } else {
     alert(data.message || "Something went wrong");
     btn.disabled = false;
   }
 });
+
+// ---- analytics/stats ----
+async function loadStats() {
+  const res = await fetch("/api/vendors/admin/stats", {
+    headers: { "x-admin-key": adminKey },
+    cache: "no-store",
+  });
+  if (!res.ok) return;
+  const s = await res.json();
+
+  document.getElementById("statsGrid").innerHTML = `
+    <div class="stat-card stat-card--highlight"><div class="stat-card__value">${s.pendingVendors}</div><div class="stat-card__label">Pending Approval</div></div>
+    <div class="stat-card"><div class="stat-card__value">${s.totalVendors}</div><div class="stat-card__label">Total Vendors</div></div>
+    <div class="stat-card"><div class="stat-card__value">${s.approvedVendors}</div><div class="stat-card__label">Approved</div></div>
+    <div class="stat-card"><div class="stat-card__value">${s.verifiedVendors}</div><div class="stat-card__label">Verified</div></div>
+    <div class="stat-card"><div class="stat-card__value">${s.totalRFQs}</div><div class="stat-card__label">Total RFQs</div></div>
+    <div class="stat-card"><div class="stat-card__value">${s.avgRating}★</div><div class="stat-card__label">Avg Rating (${s.totalReviews})</div></div>
+  `;
+
+  const cityRows = Object.entries(s.cityBreakdown).map(([city, count]) => `
+    <div class="breakdown-row"><span>${city}</span><b>${count}</b></div>
+  `).join("");
+  const catRows = Object.entries(s.categoryBreakdown).map(([cat, count]) => `
+    <div class="breakdown-row"><span>${cat}</span><b>${count}</b></div>
+  `).join("");
+
+  const breakdownHTML = `
+    <div class="breakdown">
+      <div class="breakdown-box"><h4>By City</h4>${cityRows || "No data"}</div>
+      <div class="breakdown-box"><h4>By Category</h4>${catRows || "No data"}</div>
+    </div>
+  `;
+
+  let breakdownEl = document.getElementById("breakdownSection");
+  if (!breakdownEl) {
+    breakdownEl = document.createElement("div");
+    breakdownEl.id = "breakdownSection";
+    document.getElementById("statsGrid").insertAdjacentElement("afterend", breakdownEl);
+  }
+  breakdownEl.innerHTML = breakdownHTML;
+}

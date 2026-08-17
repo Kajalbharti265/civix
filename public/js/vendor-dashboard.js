@@ -43,4 +43,14 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
   if (res.ok) loadProfile();
 });
 
+
+// ---- instant preview jab naya file select ho ----
+document.getElementById("logoInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = document.getElementById("logoPreview");
+  img.src = URL.createObjectURL(file);
+  img.hidden = false;
+});
+
 loadProfile();

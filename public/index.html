@@ -23,6 +23,7 @@
       <span class="city-pill__chevron">▾</span>
     </button>
     <a href="/customer-auth.html" class="btn btn--ghost-light" style="text-decoration:none; display:inline-flex; align-items:center;">Login</a>
+    <a href="/my-rfqs.html" class="btn btn--ghost-light" style="text-decoration:none; display:inline-flex; align-items:center;">My Requirements</a>
     <button class="btn btn--ghost-light" id="becomeVendorBtn">+ List your business</button>
   </div>
   <div class="city-dropdown" id="cityDropdown" hidden>
@@ -31,6 +32,8 @@
     <button class="city-dropdown__item" data-city="Bhopal">Bhopal</button>
     <button class="city-dropdown__item" data-city="Jabalpur">Jabalpur</button>
     <button class="city-dropdown__item" data-city="Gwalior">Gwalior</button>
+    <button class="city-dropdown__locate" id="locateBtn">🎯 Use my current location</button>
+
   </div>
 </header>
 
@@ -75,12 +78,15 @@
     <p class="modal__eyebrow">BROADCAST TO NEARBY VENDORS</p>
     <h3 class="modal__title">Post your site need</h3>
     <form id="rfqForm">
-      <label>Material / service required
-        <input type="text" name="material" placeholder="e.g. 500 Bags Cement" required>
-      </label>
-      <label>Quantity
-        <input type="text" name="quantity" placeholder="e.g. 500 Bags" required>
-      </label>
+      <label>Items required</label>
+      <div id="rfqItemsList">
+        <div class="rfq-item-row">
+          <input type="text" class="item-material" placeholder="e.g. 500 Bags Cement" required>
+          <input type="text" class="item-quantity" placeholder="Qty (e.g. 500 Bags)" required>
+        </div>
+      </div>
+      <button type="button" class="btn-add-item" id="addItemBtn">+ Add another item</button>
+
       <label>City
         <select name="city" required>
           <option value="Indore">Indore</option>
@@ -156,9 +162,92 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="reviewOverlay" hidden>
+  <div class="modal">
+    <button class="modal__close" data-close="reviewOverlay">✕</button>
+    <p class="modal__eyebrow">RATE THIS VENDOR</p>
+    <h3 class="modal__title" id="reviewVendorName">Leave a review</h3>
+    <form id="reviewForm">
+      <input type="hidden" id="reviewVendorId">
+      <label>Your name
+        <input type="text" name="customer_name" required>
+      </label>
+      <label>Your phone
+        <input type="tel" name="customer_phone" pattern="[0-9]{10}" required>
+      </label>
+      <label>Rating
+        <div class="star-picker" id="starPicker">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <input type="hidden" name="rating" id="ratingInput" required>
+      </label>
+      <label>Comment (optional)
+        <input type="text" name="comment" placeholder="How was your experience?">
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">Submit Review</button>
+    </form>
+    <div class="modal__result" id="reviewResult" hidden></div>
+  </div>
+</div>
+
 <footer class="footer">
   <div class="footer__grid"></div>
-  <p>CIVIX — built for builders, sourced locally.</p>
+  <div class="footer__inner">
+    <div class="footer__top">
+      <div class="footer__col footer__col--brand">
+        <div class="footer__brand">CIVIX</div>
+        <p class="footer__tagline">Everything for your construction site, sourced nearby. Connecting builders with verified suppliers, contractors and machinery rentals across Madhya Pradesh.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">◎</a>
+          <a href="#" aria-label="Twitter">𝕏</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h4>Explore</h4>
+        <a href="/">Home</a>
+        <a href="/#categories">Categories</a>
+        <a href="/customer-auth.html">Customer Login</a>
+        <a href="/my-rfqs.html">My Requirements</a>
+      </div>
+
+      <div class="footer__col">
+        <h4>For Vendors</h4>
+        <a href="#" id="footerListBusiness">List your business</a>
+        <a href="/vendor-login.html">Vendor Login</a>
+        <a href="/vendor-dashboard.html">Vendor Dashboard</a>
+      </div>
+
+      <div class="footer__col">
+        <h4>Cities</h4>
+        <a href="#" data-footer-city="Indore">Indore</a>
+        <a href="#" data-footer-city="Bhopal">Bhopal</a>
+        <a href="#" data-footer-city="Jabalpur">Jabalpur</a>
+        <a href="#" data-footer-city="Gwalior">Gwalior</a>
+      </div>
+
+      <div class="footer__col">
+        <h4>Contact</h4>
+        <p class="footer__contact">📍 Indore, Madhya Pradesh</p>
+        <p class="footer__contact">📞 <a href="tel:+911234567890">+91 12345 67890</a></p>
+        <p class="footer__contact">✉️ <a href="mailto:support@civix.com">support@civix.com</a></p>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>© 2026 Civix. Built for builders, sourced locally.</p>
+      <div class="footer__legal">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+  </div>
 </footer>
 
 <script src="/js/main.js"></script>

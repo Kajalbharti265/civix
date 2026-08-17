@@ -23,6 +23,7 @@
   <p class="sub">Login to manage your listing</p>
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
+  <div class="auth-forgot-row"><a class="auth-forgot" id="forgotLink">Forgot password?</a></div>
   <button class="btn btn--primary btn--block" id="loginBtn">Login</button>
   <p class="err" id="loginErr" hidden></p>
 </div>
@@ -49,6 +50,18 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
 
   localStorage.setItem("civix_vendor_token", data.session.access_token);
   window.location.href = "/vendor-dashboard.html";
+});
+document.getElementById("forgotLink").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  if (!email) { alert("Please enter your email first"); return; }
+
+  const res = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  alert(data.message);
 });
 </script>
 </body>

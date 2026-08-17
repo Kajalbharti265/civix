@@ -181,3 +181,46 @@ export const updateMyVendorProfile = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ---------- ADMIN: analytics/stats ----------
+export const getAnalytics = async (req, res) => {
+  try {
+    const { data: vendors, error: vError } = await supabase.from("vendors").select("*");
+    if (vError) return res.status(500).json({ message: vError.message });
+
+    const { data: rfqs, error: rError } = await supabase.from("rfqs").select("*");
+    if (rError) return res.status(500).json({ message: rError.message });
+
+    const { data: reviews } = await supabase.from("reviews").select("rating");
+
+    const cityBreakdown = {};
+    const categoryBreakdown = {};
+    let approvedCount = 0;
+    let verifiedCount = 0;
+
+    vendors.forEach((v) => {
+      cityBreakdown[v.city] = (cityBreakdown[v.city] || 0) + 1;
+      categoryBreakdown[v.category] = (categoryBreakdown[v.category] || 0) + 1;
+      if (v.is_approved) approvedCount++;
+      if (v.is_verified) verifiedCount++;
+    });
+
+    const avgRating = reviews && reviews.length
+      ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+      : 0;
+
+    res.json({
+      totalVendors: vendors.length,
+      approvedVendors: approvedCount,
+      pendingVendors: vendors.length - approvedCount,
+      verifiedVendors: verifiedCount,
+      totalRFQs: rfqs.length,
+      totalReviews: reviews ? reviews.length : 0,
+      avgRating,
+      cityBreakdown,
+      categoryBreakdown,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

@@ -73,4 +73,17 @@ $("#submitBtn").addEventListener("click", async () => {
   }
 });
 
+$("#forgotLink").addEventListener("click", async () => {
+  const email = $("#email").value.trim();
+  if (!email) { alert("Please enter your email first"); return; }
+
+  const res = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  alert(data.message);
+});
+
 updateUI();

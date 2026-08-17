@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Vendor Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vendor-profile.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__grid"></div>
+  <div class="topbar__inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <span class="brand__mark">CIVIX</span>
+      <span class="brand__tag">Construction Marketplace</span>
+    </a>
+    <a href="/" class="btn btn--ghost-light" style="text-decoration:none; margin-left:auto;">← Back to listings</a>
+  </div>
+</header>
+
+<main class="profile" id="profileRoot">
+  <div class="profile__loading">Loading vendor details…</div>
+</main>
+
+<div class="modal-overlay" id="reviewOverlay" hidden>
+  <div class="modal">
+    <button class="modal__close" data-close="reviewOverlay">✕</button>
+    <p class="modal__eyebrow">RATE THIS VENDOR</p>
+    <h3 class="modal__title" id="reviewVendorName">Leave a review</h3>
+    <form id="reviewForm">
+      <label>Your name
+        <input type="text" name="customer_name" required>
+      </label>
+      <label>Your phone
+        <input type="tel" name="customer_phone" pattern="[0-9]{10}" required>
+      </label>
+      <label>Rating
+        <div class="star-picker" id="starPicker">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+        <input type="hidden" name="rating" id="ratingInput" required>
+      </label>
+      <label>Comment (optional)
+        <input type="text" name="comment" placeholder="How was your experience?">
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">Submit Review</button>
+    </form>
+    <div class="modal__result" id="reviewResult" hidden></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer__grid"></div>
+  <p>CIVIX — built for builders, sourced locally.</p>
+</footer>
+
+<script src="/js/vendor-profile.js"></script>
+</body>
+</html>

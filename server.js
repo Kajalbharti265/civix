@@ -1,4 +1,5 @@
 import vendorRoutes from "./routes/vendorRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import rfqRoutes from "./routes/rfqRoutes.js";
 import express from "express";
 import dotenv from "dotenv";
@@ -25,8 +26,15 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/auth", authRoutes);
 app.use("/api/vendors", vendorRoutes);
 app.use("/api/rfq", rfqRoutes);
+app.use("/api/vendors/:vendorId/reviews", reviewRoutes);
 
 // ---- test route ----
+app.get("/api/public-config", (req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+  });
+});
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Civix API is running 🚀" });
 });

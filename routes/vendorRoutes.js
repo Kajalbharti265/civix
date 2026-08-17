@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getVendors, getVendorById, uploadVendorLogo,
-  getAllVendorsAdmin, approveVendor, verifyVendor,
+  getAllVendorsAdmin, approveVendor, verifyVendor, getAnalytics,
   getMyVendorProfile, updateMyVendorProfile,
 } from "../controllers/vendorController.js";
 import upload from "../middleware/upload.js";
@@ -14,6 +14,7 @@ router.get("/", getVendors);
 router.post("/upload-logo", upload.single("logo"), uploadVendorLogo);
 
 router.get("/admin/all", requireAdmin, getAllVendorsAdmin);
+router.get("/admin/stats", requireAdmin, getAnalytics);
 router.patch("/admin/:id/approve", requireAdmin, approveVendor);
 router.patch("/admin/:id/verify", requireAdmin, verifyVendor);
 

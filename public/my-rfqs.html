@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — My Requirements</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+<style>
+  .dash{max-width:640px; margin:40px auto; padding:0 20px;}
+  .dash h1{font-family:'Oswald',sans-serif; font-size:24px; display:flex; justify-content:space-between; align-items:center;}
+  .dash h1 a{font-size:13px; color:var(--verified-blue); text-decoration:none; font-weight:600;}
+  .rfq-card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:var(--shadow-card);}
+  .rfq-card h3{margin:0 0 6px; font-family:'Oswald',sans-serif; font-size:16px;}
+  .rfq-card p{margin:2px 0; color:var(--ink-600); font-size:13px;}
+  .rfq-card .badge{display:inline-block; margin-top:8px; font-size:12px; font-weight:700; color:var(--verified-blue); background:#DBEAFE; padding:3px 10px; border-radius:6px;}
+  .empty{text-align:center; color:var(--ink-400); padding:40px;}
+</style>
+</head>
+<body>
+<div class="dash">
+  <h1>My Requirements <a href="/">← Back to Civix</a></h1>
+  <div id="rfqList"></div>
+</div>
+
+<script>
+const token = localStorage.getItem("civix_customer_token");
+if (!token) window.location.href = "/customer-auth.html";
+
+async function loadMyRFQs() {
+  const res = await fetch("/api/rfq/my", { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) { window.location.href = "/customer-auth.html"; return; }
+  const data = await res.json();
+  const list = document.getElementById("rfqList");
+
+  if (!data.rfqs.length) {
+    list.innerHTML = `<div class="empty">You haven't posted any requirements yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = data.rfqs.map(r => `
+    <div class="rfq-card">
+      <h3>${r.material}</h3>
+      <p>Quantity: ${r.quantity}</p>
+      <p>Location: ${r.location}, ${r.city}</p>
+      <p>Posted: ${new Date(r.created_at).toLocaleDateString()}</p>
+      <span class="badge">${r.matched_vendor_count} vendor(s) matched</span>
+    </div>
+  `).join("");
+}
+loadMyRFQs();
+</script>
+</body>
+</html>

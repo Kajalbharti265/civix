@@ -119,3 +119,20 @@ export const loginVendor = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ---------- FORGOT PASSWORD (works for both customer & vendor, same auth system) ----------
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.APP_BASE_URL}/reset-password.html`,
+    });
+
+    if (error) return res.status(400).json({ message: error.message });
+    res.json({ message: "If this email is registered, a reset link has been sent." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
