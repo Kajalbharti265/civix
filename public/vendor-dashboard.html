@@ -55,6 +55,15 @@
     <button type="submit" class="btn btn--primary btn--block">Save Changes</button>
     <div class="result" id="result" hidden></div>
   </form>
+  <div class="dash" style="margin-top:24px;">
+  <h1 style="font-size:18px;">Project Photos</h1>
+  <div style="background:#fff; padding:20px; border-radius:16px; box-shadow:var(--shadow-card);">
+    <input type="file" id="galleryFile" accept="image/*">
+    <input type="text" id="galleryCaption" placeholder="Caption (optional, e.g. '3BHK site, Vijay Nagar')" style="width:100%; margin-top:10px; padding:10px; border:1px solid var(--line); border-radius:8px;">
+    <button class="btn btn--primary btn--block" id="uploadPhotoBtn" style="margin-top:10px;">Upload Photo</button>
+    <div id="galleryGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; margin-top:16px;"></div>
+  </div>
+</div>
 </div>
 
 <script src="/js/vendor-dashboard.js"></script>

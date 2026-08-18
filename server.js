@@ -1,4 +1,5 @@
 import vendorRoutes from "./routes/vendorRoutes.js";
+import galleryRoutes from "./routes/galleryRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import rfqRoutes from "./routes/rfqRoutes.js";
 import express from "express";

@@ -10,6 +10,8 @@ async function loadProfile() {
     return;
   }
   const v = await res.json();
+    myVendorId = v.id;
+  loadGallery();
 
   document.getElementById("company_name").value = v.company_name || "";
   document.getElementById("owner_name").value = v.owner_name || "";
@@ -52,5 +54,52 @@ document.getElementById("logoInput").addEventListener("change", (e) => {
   img.src = URL.createObjectURL(file);
   img.hidden = false;
 });
+
+// ---- vendor's own vendor_id nikaalo profile se (already loadProfile me mil chuka hoga) ----
+let myVendorId = null;
+
+async function loadGallery() {
+  if (!myVendorId) return;
+  const res = await fetch(`/api/vendors/${myVendorId}/gallery`);
+  const data = await res.json();
+  const grid = document.getElementById("galleryGrid");
+  grid.innerHTML = data.images.map(img => `
+    <div style="position:relative;">
+      <img src="${img.image_url}" style="width:100%; height:100px; object-fit:cover; border-radius:8px;">
+      <button data-img-id="${img.id}" class="delete-photo-btn" style="position:absolute; top:4px; right:4px; background:rgba(220,38,38,0.9); color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:11px; cursor:pointer;">✕</button>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".delete-photo-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      await fetch(`/api/vendors/${myVendorId}/gallery/${btn.dataset.imgId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      loadGallery();
+    });
+  });
+}
+
+document.getElementById("uploadPhotoBtn").addEventListener("click", async () => {
+  const fileInput = document.getElementById("galleryFile");
+  const caption = document.getElementById("galleryCaption").value;
+  if (!fileInput.files[0]) { alert("Please select a photo"); return; }
+
+  const formData = new FormData();
+  formData.append("photo", fileInput.files[0]);
+  formData.append("caption", caption);
+
+  await fetch(`/api/vendors/${myVendorId}/gallery`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  fileInput.value = "";
+  document.getElementById("galleryCaption").value = "";
+  loadGallery();
+});
+
 
 loadProfile();
