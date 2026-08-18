@@ -19,10 +19,25 @@ button{font-family:inherit; cursor:pointer;}
 .topbar__grid{position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px); background-size:28px 28px;}
 .topbar__inner{position:relative; max-width:1180px; margin:0 auto; display:flex; align-items:center; gap:16px; padding:16px 20px;}
 @media(max-width:640px){
-  .topbar__inner{flex-wrap:wrap; gap:8px; padding:12px 14px;}
-  .brand{width:100%; margin-right:0; margin-bottom:4px;}
-  .city-pill, .btn--ghost-light{font-size:12px; padding:8px 10px; flex:1; justify-content:center; white-space:nowrap;}
-  .topbar__inner > a, .topbar__inner > button{flex:1 1 auto; min-width:0;}
+  .topbar__inner{
+    display:flex; flex-wrap:wrap; align-items:center;
+    gap:8px; padding:12px 16px;
+  }
+  .brand{margin-right:0; margin-bottom:0; flex:1 1 auto;}
+  .brand__mark{font-size:20px;}
+  .brand__tag{
+    display:block !important; font-size:9px; letter-spacing:.08em;
+    margin-top:1px; white-space:nowrap;
+  }
+  .city-pill{
+    order:3; flex:1 1 auto; font-size:12px; padding:7px 10px;
+    justify-content:center;
+  }
+  a.btn--ghost-light, button#becomeVendorBtn, a[href="/my-rfqs.html"]{
+    order:4; font-size:11px; padding:7px 10px; flex:0 1 auto;
+    white-space:nowrap;
+  }
+  #cityPillBtn{order:2;}
 }
 .brand{display:flex; align-items:baseline; gap:10px; margin-right:auto;}
 .brand__mark{font-family:'Oswald',sans-serif; font-weight:700; letter-spacing:.04em; font-size:26px; color:#fff;}
