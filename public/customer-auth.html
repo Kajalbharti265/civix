@@ -5,25 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Civix — Customer Login</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/admin.css">
 <style>
-  body{display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--steel-900);}
-  .box{background:#fff; padding:32px; border-radius:16px; width:100%; max-width:380px; box-shadow:var(--shadow-pop);}
-  .box h2{font-family:'Oswald',sans-serif; margin:0 0 4px;}
+  :root{
+    --steel-900:#121A22; --signal-orange:#FF5A1F; --signal-orange-dark:#E24610;
+    --line:#D6DFE7; --ink-600:#4C5A68; --shadow-pop:0 20px 60px -20px rgba(16,24,32,.45);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--steel-900); font-family:'Inter',sans-serif; padding:20px;
+  }
+  .box{
+    background:#fff; padding:32px; border-radius:16px; width:100%; max-width:380px;
+    box-shadow:var(--shadow-pop); position:relative; z-index:1;
+  }
+  .eyebrow{color:var(--signal-orange); font-size:11px; letter-spacing:.14em; font-weight:700; margin:0 0 6px;}
+  .box h2{font-family:'Oswald',sans-serif; margin:0 0 4px; color:#101820;}
   .box p.sub{color:var(--ink-600); font-size:13px; margin:0 0 20px;}
-  .box input, .box select{width:100%; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:14px; margin-bottom:12px;}
-  .box .err{color:#DC2626; font-size:13px; margin-top:8px;}
-  .box .err[hidden]{display:none;}
-  .box .ok{color:#166534; font-size:13px; margin-top:8px;}
-  .box .ok[hidden]{display:none;}
+  .box input, .box select{width:100%; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:14px; margin-bottom:12px; font-family:inherit;}
+  .btn{border:none; border-radius:10px; padding:12px 16px; font-weight:600; font-size:14px; cursor:pointer; width:100%;}
+  .btn--primary{background:var(--signal-orange); color:#fff;}
+  .btn--primary:hover{background:var(--signal-orange-dark);}
+  .err{color:#DC2626; font-size:13px; margin-top:8px;}
+  .err[hidden]{display:none;}
+  .ok{color:#166534; font-size:13px; margin-top:8px;}
+  .ok[hidden]{display:none;}
   .switch{text-align:center; font-size:13px; color:var(--ink-600); margin-top:14px;}
   .switch a{color:var(--signal-orange); font-weight:600; cursor:pointer; text-decoration:none;}
+  .forgot-row{display:flex; justify-content:flex-end; margin:-4px 0 14px;}
+  .forgot-row a{color:var(--signal-orange); font-size:12px; font-weight:600; cursor:pointer; text-decoration:none;}
   #signupFields[hidden]{display:none;}
 </style>
 </head>
 <body>
-<div class="auth-box">
-  <p class="gate__eyebrow" id="formEyebrow">CIVIX</p>
+<div class="box">
+  <p class="eyebrow" id="formEyebrow">CIVIX</p>
   <h2 id="formTitle">Login</h2>
   <p class="sub" id="formSub">Welcome back</p>
 
@@ -37,11 +53,11 @@
       <option value="Gwalior">Gwalior</option>
     </select>
   </div>
-  <div class="auth-forgot-row"><a class="auth-forgot" id="forgotLink">Forgot password?</a></div>
 
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
-  <button class="btn btn--primary btn--block" id="submitBtn">Login</button>
+  <div class="forgot-row"><a id="forgotLink">Forgot password?</a></div>
+  <button class="btn btn--primary" id="submitBtn">Login</button>
 
   <p class="err" id="errBox" hidden></p>
   <p class="ok" id="okBox" hidden></p>
@@ -52,6 +68,95 @@
   </p>
 </div>
 
-<script src="/js/customer-auth.js"></script>
+<script>
+let mode = "login";
+const $ = (s) => document.querySelector(s);
+
+function updateUI() {
+  if (mode === "login") {
+    $("#formTitle").textContent = "Login";
+    $("#formSub").textContent = "Welcome back";
+    $("#submitBtn").textContent = "Login";
+    $("#switchText").textContent = "Don't have an account?";
+    $("#switchLink").textContent = "Sign up";
+    $("#signupFields").hidden = true;
+  } else {
+    $("#formTitle").textContent = "Create Account";
+    $("#formSub").textContent = "Join Civix as a customer";
+    $("#submitBtn").textContent = "Sign Up";
+    $("#switchText").textContent = "Already have an account?";
+    $("#switchLink").textContent = "Login";
+    $("#signupFields").hidden = false;
+  }
+  $("#errBox").hidden = true;
+  $("#okBox").hidden = true;
+}
+
+$("#switchLink").addEventListener("click", () => {
+  mode = mode === "login" ? "signup" : "login";
+  updateUI();
+});
+
+$("#submitBtn").addEventListener("click", async () => {
+  const email = $("#email").value.trim();
+  const password = $("#password").value;
+  const errBox = $("#errBox");
+  const okBox = $("#okBox");
+  errBox.hidden = true;
+  okBox.hidden = true;
+
+  if (mode === "login") {
+    const res = await fetch("/api/auth/user/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errBox.textContent = data.message || "Login failed";
+      errBox.hidden = false;
+      return;
+    }
+    localStorage.setItem("civix_customer_token", data.session?.access_token || "");
+    localStorage.setItem("civix_customer_name", data.user.name);
+    window.location.href = "/";
+  } else {
+    const name = $("#name").value.trim();
+    const phone = $("#phone").value.trim();
+    const city = $("#city").value;
+
+    const res = await fetch("/api/auth/user/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, phone, city }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errBox.textContent = data.message || "Signup failed";
+      errBox.hidden = false;
+      return;
+    }
+    okBox.textContent = "Account created! You can now login.";
+    okBox.hidden = false;
+    mode = "login";
+    setTimeout(updateUI, 1200);
+  }
+});
+
+$("#forgotLink").addEventListener("click", async () => {
+  const email = $("#email").value.trim();
+  if (!email) { alert("Please enter your email first"); return; }
+
+  const res = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  alert(data.message);
+});
+
+updateUI();
+</script>
 </body>
 </html>

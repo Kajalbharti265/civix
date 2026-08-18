@@ -18,6 +18,12 @@ button{font-family:inherit; cursor:pointer;}
 }
 .topbar__grid{position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px); background-size:28px 28px;}
 .topbar__inner{position:relative; max-width:1180px; margin:0 auto; display:flex; align-items:center; gap:16px; padding:16px 20px;}
+@media(max-width:640px){
+  .topbar__inner{flex-wrap:wrap; gap:8px; padding:12px 14px;}
+  .brand{width:100%; margin-right:0; margin-bottom:4px;}
+  .city-pill, .btn--ghost-light{font-size:12px; padding:8px 10px; flex:1; justify-content:center; white-space:nowrap;}
+  .topbar__inner > a, .topbar__inner > button{flex:1 1 auto; min-width:0;}
+}
 .brand{display:flex; align-items:baseline; gap:10px; margin-right:auto;}
 .brand__mark{font-family:'Oswald',sans-serif; font-weight:700; letter-spacing:.04em; font-size:26px; color:#fff;}
 .brand__tag{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--caution-yellow); font-weight:600; display:none;}
