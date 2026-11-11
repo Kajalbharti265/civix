@@ -24,6 +24,11 @@ const guessCategory = (materialText) => {
   }
   return null;
 };
+const parseQty = (text) => {
+  const m = String(text).trim().match(/^([\d.,]+)\s*(.*)$/);
+  if (!m) return { qty: null, unit: "" };
+  return { qty: parseFloat(m[1].replace(/,/g, "")), unit: m[2].trim() };
+};
 
 // ---------- POST Site Need (RFQ) ----------
 export const postRFQ = async (req, res) => {
@@ -79,12 +84,17 @@ export const postRFQ = async (req, res) => {
     if (rfqError) return res.status(500).json({ message: rfqError.message });
 
     // har item ko rfq_items table me save karo
-    const itemRows = itemsWithCategory.map((i) => ({
-      rfq_id: rfq.id,
-      material: i.material,
-      quantity: i.quantity,
-      category_guess: i.category_guess,
-    }));
+        const itemRows = itemsWithCategory.map((i) => {
+      const { qty, unit } = parseQty(i.quantity);
+      return {
+        rfq_id: rfq.id,
+        material: i.material,
+        quantity: i.quantity,
+        qty,
+        unit,
+        category_guess: i.category_guess,
+      };
+    });
     await supabase.from("rfq_items").insert(itemRows);
 
     // saare matched vendors ka poora data nikaal lo response ke liye

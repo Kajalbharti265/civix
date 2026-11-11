@@ -1,3 +1,4 @@
+import quoteRoutes from "./routes/quoteRoutes.js";
 import vendorRoutes from "./routes/vendorRoutes.js";
 import galleryRoutes from "./routes/galleryRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
@@ -28,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/vendors", vendorRoutes);
 app.use("/api/rfq", rfqRoutes);
 app.use("/api/vendors/:vendorId/reviews", reviewRoutes);
+app.use("/api/quotes", quoteRoutes);
 
 // ---- test route ----
 app.get("/api/public-config", (req, res) => {

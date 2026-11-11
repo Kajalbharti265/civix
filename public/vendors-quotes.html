@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Open Requirements</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .page{max-width:900px; margin:0 auto; padding:28px 20px 80px;}
+  .page h1{font-family:'Oswald',sans-serif; font-size:24px; margin:0 0 4px;}
+  .lead{color:var(--ink-600); font-size:14px; margin:0 0 20px;}
+  .rfq-card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:14px; box-shadow:var(--shadow-card);}
+  .rfq-card__top{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .rfq-card__loc{font-weight:600; font-size:14px;}
+  .rfq-card__date{color:var(--ink-400); font-size:12px; font-family:'IBM Plex Mono',monospace;}
+  .item-list{list-style:none; margin:0 0 12px; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .item-list li{background:var(--blueprint-100); border-radius:8px; padding:8px 10px; font-size:13px; display:flex; justify-content:space-between; gap:8px;}
+  .quote-badge{display:inline-block; font-size:12px; font-weight:700; padding:4px 10px; border-radius:6px; margin-right:8px; background:#DBEAFE; color:#1D4ED8;}
+  .empty{text-align:center; color:var(--ink-400); padding:50px 20px;}
+  .q-item{border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--blueprint-50);}
+  .q-item__name{font-weight:700; font-size:13px; display:flex; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .q-item__name span{color:var(--ink-600); font-weight:500;}
+  .q-item__inputs{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .q-item__total{font-size:12px; color:var(--ink-600); margin-top:6px;}
+  .q-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .q-grand{display:flex; justify-content:space-between; font-weight:700; padding:12px; background:#FFF6E0; border-radius:10px; font-size:15px;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__grid"></div>
+  <div class="topbar__inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <span class="brand__mark">CIVIX</span>
+      <span class="brand__tag">Construction Marketplace</span>
+    </a>
+    <a href="/vendor-dashboard.html" class="btn btn--ghost-light" style="text-decoration:none;">← Dashboard</a>
+  </div>
+</header>
+
+<main class="page">
+  <h1>Open Requirements</h1>
+  <p class="lead">Customers in your city who need what you sell. Send your best rate and win the order.</p>
+  <div id="rfqList"><div class="empty">Loading…</div></div>
+</main>
+
+<div class="modal-overlay" id="quoteOverlay" hidden>
+  <div class="modal">
+    <button class="modal__close" id="quoteClose">✕</button>
+    <p class="modal__eyebrow">SEND YOUR QUOTE</p>
+    <h3 class="modal__title" id="quoteTitle">Quote</h3>
+    <form id="quoteForm">
+      <div id="quoteItems" style="display:flex; flex-direction:column; gap:10px;"></div>
+      <div class="q-grid">
+        <label>Delivery charge (₹)
+          <input type="number" id="qDelivery" min="0" step="0.01" value="0">
+        </label>
+        <label>Delivery in (days)
+          <input type="number" id="qDays" min="0" value="2">
+        </label>
+      </div>
+      <label>Quote valid till (optional)
+        <input type="date" id="qValid">
+      </label>
+      <label>Note (optional)
+        <input type="text" id="qNote" placeholder="e.g. Same day dispatch possible">
+      </label>
+      <div class="q-grand"><span>Total</span><span id="qGrand">₹0</span></div>
+      <button type="submit" class="btn btn--primary btn--block" id="quoteSubmit">Submit Quote</button>
+    </form>
+    <div class="modal__result" id="quoteResult" hidden></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const token = localStorage.getItem("civix_vendor_token");
+if (!token) window.location.href = "/vendor-login.html";
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const authHeaders = { Authorization: `Bearer ${token}` };
+
+let rfqs = [];
+let activeRfq = null;
+
+function cardHTML(r) {
+  const q = r.my_quote;
+  return `
+  <div class="rfq-card">
+    <div class="rfq-card__top">
+      <span class="rfq-card__loc">📍 ${esc(r.location)}, ${esc(r.city)}</span>
+      <span class="rfq-card__date">${new Date(r.created_at).toLocaleDateString("en-IN")}</span>
+    </div>
+    <ul class="item-list">
+      ${r.rfq_items.map((i) => `<li><span>${esc(i.material)}</span><b>${esc(i.quantity)}</b></li>`).join("")}
+    </ul>
+    ${q ? `<span class="quote-badge">Your quote: ${inr(q.total_amount)}</span>` : ""}
+    <button class="btn btn--primary" data-quote="${r.id}">${q ? "Edit quote" : "Send quote"}</button>
+  </div>`;
+}
+
+async function loadRFQs() {
+  const res = await fetch("/api/quotes/vendor/open-rfqs", { headers: authHeaders, cache: "no-store" });
+  if (res.status === 401) { window.location.href = "/vendor-login.html"; return; }
+  const data = await res.json();
+  const list = $("#rfqList");
+
+  if (!res.ok) { list.innerHTML = `<div class="empty">${esc(data.message || "Could not load")}</div>`; return; }
+  rfqs = data.rfqs;
+  list.innerHTML = rfqs.length
+    ? rfqs.map(cardHTML).join("")
+    : `<div class="empty">No open requirements in your city & category right now.</div>`;
+}
+
+function recalc() {
+  let sub = 0;
+  document.querySelectorAll(".q-item").forEach((el) => {
+    const price = parseFloat(el.querySelector(".q-price").value) || 0;
+    const line = price * Number(el.dataset.qty);
+    sub += line;
+    el.querySelector(".q-item__total b").textContent = inr(line);
+  });
+  $("#qGrand").textContent = inr(sub + (parseFloat($("#qDelivery").value) || 0));
+}
+
+function openQuoteModal(rfqId) {
+  activeRfq = rfqs.find((r) => r.id === rfqId);
+  $("#quoteTitle").textContent = `Quote for ${activeRfq.location}`;
+  $("#quoteItems").innerHTML = activeRfq.rfq_items.map((i) => `
+    <div class="q-item" data-item="${i.id}" data-qty="${i.qty || 1}">
+      <div class="q-item__name">${esc(i.material)} <span>${esc(i.quantity)}</span></div>
+      <div class="q-item__inputs">
+        <input type="text" class="q-brand" placeholder="Brand (e.g. UltraTech)">
+        <input type="number" class="q-price" min="0" step="0.01" placeholder="Rate per ${esc(i.unit || "unit")} (₹)" required>
+      </div>
+      <div class="q-item__total">Line total: <b>₹0</b></div>
+    </div>`).join("");
+  $("#quoteResult").hidden = true;
+  recalc();
+  $("#quoteOverlay").hidden = false;
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-quote]");
+  if (btn) openQuoteModal(btn.dataset.quote);
+});
+$("#quoteForm").addEventListener("input", recalc);
+$("#quoteClose").addEventListener("click", () => { $("#quoteOverlay").hidden = true; });
+$("#quoteOverlay").addEventListener("click", (e) => { if (e.target.id === "quoteOverlay") e.target.hidden = true; });
+
+$("#quoteForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const items = [...document.querySelectorAll(".q-item")].map((el) => ({
+    rfq_item_id: el.dataset.item,
+    brand: el.querySelector(".q-brand").value.trim(),
+    unit_price: parseFloat(el.querySelector(".q-price").value),
+  }));
+  const payload = {
+    items,
+    delivery_charge: parseFloat($("#qDelivery").value) || 0,
+    delivery_days: parseInt($("#qDays").value, 10) || 2,
+    valid_until: $("#qValid").value || null,
+    note: $("#qNote").value.trim(),
+  };
+
+  const btn = $("#quoteSubmit");
+  btn.disabled = true;
+  const res = await fetch(`/api/quotes/rfq/${activeRfq.id}`, {
+    method: "POST",
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  btn.disabled = false;
+
+  const box = $("#quoteResult");
+  box.hidden = false;
+  box.textContent = data.message || "Done";
+  box.style.background = res.ok ? "" : "#FEE2E2";
+  box.style.color = res.ok ? "" : "#B91C1C";
+
+  if (res.ok) setTimeout(() => { $("#quoteOverlay").hidden = true; loadRFQs(); }, 1200);
+});
+
+loadRFQs();
+</script>
+</body>
+</html>

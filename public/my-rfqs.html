@@ -15,6 +15,8 @@
   .rfq-card p{margin:2px 0; color:var(--ink-600); font-size:13px;}
   .rfq-card .badge{display:inline-block; margin-top:8px; font-size:12px; font-weight:700; color:var(--verified-blue); background:#DBEAFE; padding:3px 10px; border-radius:6px;}
   .empty{text-align:center; color:var(--ink-400); padding:40px;}
+  .rfq-card .badge--status{background:#DCFCE7; color:#166534; margin-left:6px;}
+  .view-quotes{display:block; margin-top:12px; color:var(--signal-orange); font-weight:700; font-size:13px; text-decoration:none;}
 </style>
 </head>
 <body>
@@ -38,13 +40,15 @@ async function loadMyRFQs() {
     return;
   }
 
-  list.innerHTML = data.rfqs.map(r => `
+    list.innerHTML = data.rfqs.map(r => `
     <div class="rfq-card">
       <h3>${r.material}</h3>
       <p>Quantity: ${r.quantity}</p>
       <p>Location: ${r.location}, ${r.city}</p>
       <p>Posted: ${new Date(r.created_at).toLocaleDateString()}</p>
       <span class="badge">${r.matched_vendor_count} vendor(s) matched</span>
+      <span class="badge badge--status">${r.status === "closed" ? "Closed" : "Open"}</span>
+      <a class="view-quotes" href="/rfq-quotes.html?id=${r.id}">View quotes →</a>
     </div>
   `).join("");
 }

@@ -242,8 +242,13 @@ $("#rfqForm").addEventListener("submit", async (e) => {
   };
 
   const headers = { "Content-Type": "application/json" };
-  const customerToken = localStorage.getItem("civix_customer_token");
-  if (customerToken) headers["Authorization"] = `Bearer ${customerToken}`;
+    const customerToken = localStorage.getItem("civix_customer_token");
+  if (!customerToken) {
+    alert("Please login first so you can receive and compare vendor quotes.");
+    window.location.href = "/customer-auth.html";
+    return;
+  }
+  headers["Authorization"] = `Bearer ${customerToken}`;
 
   const res = await fetch("/api/rfq", { method: "POST", headers, body: JSON.stringify(payload) });
   const data = await res.json();
