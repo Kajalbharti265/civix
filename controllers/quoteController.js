@@ -217,6 +217,11 @@ export const acceptQuote = async (req, res) => {
       .single();
 
     if (orderError) return res.status(500).json({ message: orderError.message });
+        await supabase.from("order_events").insert({
+      order_id: order.id,
+      status: "confirmed",
+      note: "Order placed by buyer",
+    });
 
     await supabase.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
     await supabase

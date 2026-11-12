@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Orders</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .page{max-width:900px; margin:0 auto; padding:28px 20px 80px;}
+  .page h1{font-family:'Oswald',sans-serif; font-size:24px; margin:0 0 4px;}
+  .lead{color:var(--ink-600); font-size:14px; margin:0 0 18px;}
+  .tabs{display:flex; gap:8px; overflow-x:auto; margin:0 0 18px; padding-bottom:4px;}
+  .tab-chip{flex:none; background:#fff; border:1px solid var(--line); border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; color:var(--ink-600);}
+  .tab-chip.is-active{background:var(--steel-900); color:#fff; border-color:var(--steel-900);}
+  .empty{text-align:center; color:var(--ink-400); padding:60px 20px;}
+
+  .order{background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-card); margin-bottom:16px; overflow:hidden;}
+  .order__head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; padding:16px 18px; border-bottom:1px solid var(--blueprint-100);}
+  .order__no{font-family:'Oswald',sans-serif; font-size:17px; font-weight:600;}
+  .order__date{color:var(--ink-400); font-size:12px; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+  .pill{font-size:12px; font-weight:700; padding:4px 10px; border-radius:6px; display:inline-block;}
+  .pill--confirmed{background:#DBEAFE; color:#1D4ED8;}
+  .pill--dispatched{background:#FEF3C7; color:#92400E;}
+  .pill--delivered{background:#DCFCE7; color:#166534;}
+  .pill--cancelled{background:#FEE2E2; color:#B91C1C;}
+  .pill--pay{background:var(--blueprint-100); color:var(--ink-600); margin-left:6px;}
+
+  .stepper{display:flex; padding:18px 18px 8px;}
+  .step{flex:1; text-align:center; position:relative; font-size:12px; color:var(--ink-400); font-weight:600;}
+  .step::before{content:""; position:absolute; top:11px; left:-50%; width:100%; height:3px; background:var(--line);}
+  .step:first-child::before{display:none;}
+  .step__dot{width:24px; height:24px; border-radius:50%; background:var(--line); color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 6px; position:relative; z-index:1; font-size:12px;}
+  .step.is-done, .step.is-current{color:var(--ink-900);}
+  .step.is-done::before, .step.is-current::before{background:#22A559;}
+  .step.is-done .step__dot{background:#22A559;}
+  .step.is-current .step__dot{background:var(--signal-orange);}
+  .cancel-banner{margin:16px 18px 0; background:#FEE2E2; color:#B91C1C; font-weight:600; font-size:13px; padding:10px 12px; border-radius:10px;}
+
+  .order__body{padding:14px 18px 18px; display:flex; flex-direction:column; gap:14px;}
+  .party{background:var(--blueprint-50); border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.6;}
+  .party b{font-size:14px;}
+  .party a.name{color:var(--ink-900); text-decoration:none;}
+  .contact-row{display:flex; gap:8px; margin-top:8px;}
+  .contact-row .action-btn{flex:none; padding:8px 14px;}
+  .table-wrap{overflow-x:auto;}
+  table.items{width:100%; border-collapse:collapse; font-size:13px; min-width:420px;}
+  .items th, .items td{padding:8px 6px; text-align:left; border-bottom:1px solid var(--blueprint-100); vertical-align:top;}
+  .items th{color:var(--ink-400); font-size:11px; text-transform:uppercase; letter-spacing:.06em;}
+  .items small{display:block; color:var(--ink-400);}
+  .totals{margin-left:auto; min-width:220px; font-size:13px;}
+  .totals div{display:flex; justify-content:space-between; padding:3px 0;}
+  .totals .grand{font-weight:700; font-size:16px; border-top:1px solid var(--line); margin-top:4px; padding-top:8px;}
+  .fee-note{color:var(--ink-400); font-size:11px; margin-top:4px; text-align:right;}
+  .timeline{list-style:none; margin:0; padding:0; font-size:12px; color:var(--ink-600);}
+  .timeline li{padding:4px 0 4px 14px; border-left:2px solid var(--line); margin-left:4px;}
+  .timeline b{color:var(--ink-900);}
+  .actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .btn--danger{background:#FEE2E2; color:#B91C1C;}
+  .btn--danger:hover{background:#FECACA;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__grid"></div>
+  <div class="topbar__inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <span class="brand__mark">CIVIX</span>
+      <span class="brand__tag">Construction Marketplace</span>
+    </a>
+    <a id="backLink" href="/" class="btn btn--ghost-light" style="text-decoration:none;">← Back</a>
+  </div>
+</header>
+
+<main class="page">
+  <h1 id="pageTitle">My Orders</h1>
+  <p class="lead" id="pageLead"></p>
+  <div class="tabs" id="tabs"></div>
+  <div id="orderList"><div class="empty">Loading…</div></div>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const fmt = (d) => new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+const mode = new URLSearchParams(location.search).get("as") === "vendor" ? "vendor" : "buyer";
+const token = localStorage.getItem(mode === "vendor" ? "civix_vendor_token" : "civix_customer_token");
+if (!token) location.href = mode === "vendor" ? "/vendor-login.html" : "/customer-auth.html";
+
+const endpoint = mode === "vendor" ? "/api/orders/vendor" : "/api/orders/my";
+const authHeaders = { Authorization: `Bearer ${token}` };
+
+$("#backLink").href = mode === "vendor" ? "/vendor-dashboard.html" : "/my-rfqs.html";
+$("#pageTitle").textContent = mode === "vendor" ? "Orders received" : "My Orders";
+$("#pageLead").textContent = mode === "vendor"
+  ? "Orders won from your quotes. Update the status as you dispatch and deliver."
+  : "Track every order placed from accepted quotes.";
+
+const STATUS_LABEL = { confirmed: "Confirmed", dispatched: "Dispatched", delivered: "Delivered", cancelled: "Cancelled" };
+const STEPS = ["confirmed", "dispatched", "delivered"];
+const TABS = [
+  { key: "all", label: "All" },
+  { key: "active", label: "Active" },
+  { key: "delivered", label: "Delivered" },
+  { key: "cancelled", label: "Cancelled" },
+];
+
+let orders = [];
+let filter = "all";
+
+const orderNo = (o) => (o.order_no ? "CVX-" + (1000 + Number(o.order_no)) : String(o.id).slice(0, 8).toUpperCase());
+
+function matches(o) {
+  if (filter === "all") return true;
+  if (filter === "active") return o.status === "confirmed" || o.status === "dispatched";
+  return o.status === filter;
+}
+
+function renderTabs() {
+  $("#tabs").innerHTML = TABS.map((t) => {
+    const n = orders.filter((o) => {
+      const prev = filter; filter = t.key; const ok = matches(o); filter = prev; return ok;
+    }).length;
+    return `<button class="tab-chip ${filter === t.key ? "is-active" : ""}" data-tab="${t.key}">${t.label} (${n})</button>`;
+  }).join("");
+}
+
+function stepperHTML(o) {
+  if (o.status === "cancelled") return `<div class="cancel-banner">This order was cancelled.</div>`;
+  const idx = STEPS.indexOf(o.status);
+  return `<div class="stepper">${STEPS.map((s, i) => {
+    const cls = i < idx || o.status === "delivered" ? "is-done" : i === idx ? "is-current" : "";
+    const dot = cls === "is-done" ? "✓" : i + 1;
+    return `<div class="step ${cls}"><div class="step__dot">${dot}</div>${STATUS_LABEL[s]}</div>`;
+  }).join("")}</div>`;
+}
+
+function partyHTML(o) {
+  if (mode === "buyer") {
+    const v = o.vendors || {};
+    const wa = `https://wa.me/91${v.phone}?text=${encodeURIComponent(`Hi, regarding my Civix order ${orderNo(o)}`)}`;
+    return `<div class="party">
+      <div>Vendor</div>
+      <b><a class="name" href="/vendor.html?id=${esc(v.id)}">${esc(v.company_name)}</a> ${v.is_verified ? "✔" : ""}</b>
+      <div>📍 ${esc(v.city)} · Delivery in ${esc(o.quotes?.delivery_days ?? "—")} day(s)</div>
+      <div>Deliver to: ${esc(o.delivery_address)}</div>
+      <div class="contact-row">
+        <a class="action-btn action-btn--call" href="tel:+91${esc(v.phone)}">📞 Call</a>
+        <a class="action-btn action-btn--whatsapp" target="_blank" rel="noopener" href="${wa}">💬 WhatsApp</a>
+      </div>
+    </div>`;
+  }
+  const phone = o.rfqs?.phone || "";
+  const wa = `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi, this is regarding your Civix order ${orderNo(o)}`)}`;
+  return `<div class="party">
+    <div>Customer</div>
+    <b>📞 ${esc(phone)}</b>
+    <div>Deliver to: ${esc(o.delivery_address)}</div>
+    <div class="contact-row">
+      <a class="action-btn action-btn--call" href="tel:+91${esc(phone)}">📞 Call</a>
+      <a class="action-btn action-btn--whatsapp" target="_blank" rel="noopener" href="${wa}">💬 WhatsApp</a>
+    </div>
+  </div>`;
+}
+
+function itemsHTML(o) {
+  const items = o.rfqs?.rfq_items || [];
+  const qItems = o.quotes?.quote_items || [];
+  const delivery = Number(o.quotes?.delivery_charge || 0);
+  const rows = items.map((it) => {
+    const qi = qItems.find((x) => x.rfq_item_id === it.id);
+    return `<tr>
+      <td>${esc(it.material)}${qi?.brand ? `<small>${esc(qi.brand)}</small>` : ""}</td>
+      <td>${esc(it.quantity)}</td>
+      <td>${qi ? inr(qi.unit_price) : "—"}</td>
+      <td>${qi ? inr(qi.line_total) : "—"}</td>
+    </tr>`;
+  }).join("");
+
+  return `<div class="table-wrap"><table class="items">
+      <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="totals">
+      <div><span>Delivery charge</span><span>${inr(delivery)}</span></div>
+      <div class="grand"><span>Total</span><span>${inr(o.total_amount)}</span></div>
+      ${mode === "vendor" ? `<div class="fee-note">Platform fee: ${inr(o.commission_amount)}</div>` : ""}
+    </div>`;
+}
+
+function timelineHTML(o) {
+  let events = [...(o.order_events || [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  if (!events.length) events = [{ status: "confirmed", note: "Order placed by buyer", created_at: o.created_at }];
+  return `<ul class="timeline">${events.map((e) =>
+    `<li><b>${STATUS_LABEL[e.status] || esc(e.status)}</b> · ${fmt(e.created_at)}${e.note ? ` — ${esc(e.note)}` : ""}</li>`
+  ).join("")}</ul>`;
+}
+
+function actionsHTML(o) {
+  const b = (act, label, cls = "btn--primary") => `<button class="btn ${cls}" data-act="${act}" data-id="${esc(o.id)}">${label}</button>`;
+  if (mode === "vendor") {
+    if (o.status === "confirmed") return b("dispatched", "Mark dispatched") + b("cancelled", "Cancel order", "btn--danger");
+    if (o.status === "dispatched") return b("delivered", "Mark delivered");
+    return "";
+  }
+  if (o.status === "confirmed") return b("cancelled", "Cancel order", "btn--danger");
+  return "";
+}
+
+function orderHTML(o) {
+  const actions = actionsHTML(o);
+  return `<div class="order">
+    <div class="order__head">
+      <div>
+        <div class="order__no">${orderNo(o)}</div>
+        <div class="order__date">${fmt(o.created_at)}</div>
+      </div>
+      <div>
+        <span class="pill pill--${esc(o.status)}">${STATUS_LABEL[o.status] || esc(o.status)}</span>
+        <span class="pill pill--pay">Payment ${esc(o.payment_status)}</span>
+      </div>
+    </div>
+    ${stepperHTML(o)}
+    <div class="order__body">
+      ${partyHTML(o)}
+      ${itemsHTML(o)}
+      ${timelineHTML(o)}
+      ${actions ? `<div class="actions">${actions}</div>` : ""}
+    </div>
+  </div>`;
+}
+
+function render() {
+  renderTabs();
+  const list = orders.filter(matches);
+  $("#orderList").innerHTML = list.length
+    ? list.map(orderHTML).join("")
+    : `<div class="empty">${orders.length ? "No orders in this filter." : "No orders yet."}</div>`;
+}
+
+async function load() {
+  const res = await fetch(endpoint, { headers: authHeaders, cache: "no-store" });
+  if (res.status === 401) { location.href = mode === "vendor" ? "/vendor-login.html" : "/customer-auth.html"; return; }
+  const data = await res.json();
+  if (!res.ok) { $("#orderList").innerHTML = `<div class="empty">${esc(data.message || "Could not load orders")}</div>`; return; }
+  orders = data.orders;
+  render();
+}
+
+document.addEventListener("click", async (e) => {
+  const tab = e.target.closest("[data-tab]");
+  if (tab) { filter = tab.dataset.tab; render(); return; }
+
+  const btn = e.target.closest("[data-act]");
+  if (!btn) return;
+
+  const status = btn.dataset.act;
+  let note = "";
+  if (status === "cancelled") {
+    const reason = prompt("Reason for cancelling (optional):");
+    if (reason === null) return;
+    note = reason.trim();
+  } else if (!confirm(`Mark this order as ${STATUS_LABEL[status].toLowerCase()}?`)) {
+    return;
+  }
+
+  btn.disabled = true;
+  const res = await fetch(`/api/orders/${btn.dataset.id}/status`, {
+    method: "PATCH",
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ status, note }),
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.message || "Could not update"); btn.disabled = false; return; }
+  load();
+});
+
+load();
+</script>
+</body>
+</html>
