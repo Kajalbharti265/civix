@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civix — Compare Quotes</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .page{max-width:1100px; margin:0 auto; padding:28px 20px 80px;}
+  .page h1{font-family:'Oswald',sans-serif; font-size:24px; margin:0 0 4px;}
+  .lead{color:var(--ink-600); font-size:14px; margin:0 0 20px;}
+  .empty{text-align:center; color:var(--ink-400); padding:60px 20px;}
+  .table-wrap{overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-card);}
+  table.compare{border-collapse:collapse; width:100%; min-width:520px;}
+  .compare th, .compare td{padding:14px; border-bottom:1px solid var(--blueprint-100); text-align:left; vertical-align:top; font-size:13px; min-width:170px;}
+  .compare th:first-child, .compare td:first-child{position:sticky; left:0; background:#fff; min-width:140px; font-weight:600; z-index:1;}
+  .compare th a{color:var(--ink-900); font-family:'Oswald',sans-serif; font-size:15px; text-decoration:none;}
+  .compare small{display:block; color:var(--ink-400); font-weight:400; margin-top:2px;}
+  .v-meta{color:var(--ink-600); font-size:12px; margin-top:3px; font-weight:500;}
+  .is-lowest{background:#F0FDF4;}
+  .tag-l1{display:inline-block; background:#22A559; color:#fff; font-size:10px; font-weight:700; letter-spacing:.06em; padding:2px 8px; border-radius:6px; margin-bottom:6px;}
+  tr.total td{font-weight:700; font-size:15px; background:#FFF6E0;}
+  .st{font-weight:700; font-size:12px; padding:5px 10px; border-radius:6px; display:inline-block;}
+  .st--ok{background:#DCFCE7; color:#166534;}
+  .st--no{background:#F1F5F9; color:var(--ink-400);}
+  #acceptAddr{border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-size:14px; background:var(--blueprint-50); font-family:inherit; min-height:80px;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__grid"></div>
+  <div class="topbar__inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <span class="brand__mark">CIVIX</span>
+      <span class="brand__tag">Construction Marketplace</span>
+    </a>
+    <a href="/my-rfqs.html" class="btn btn--ghost-light" style="text-decoration:none;">← My Requirements</a>
+  </div>
+</header>
+
+<main class="page" id="root"><div class="empty">Loading quotes…</div></main>
+
+<div class="modal-overlay" id="acceptOverlay" hidden>
+  <div class="modal">
+    <button class="modal__close" id="acceptClose">✕</button>
+    <p class="modal__eyebrow">CONFIRM ORDER</p>
+    <h3 class="modal__title">Where should we deliver?</h3>
+    <form id="acceptForm">
+      <label>Delivery address
+        <textarea id="acceptAddr" placeholder="Plot / site address with landmark" required></textarea>
+      </label>
+      <button type="submit" class="btn btn--primary btn--block" id="acceptSubmit">Confirm Order</button>
+    </form>
+    <div class="modal__result" id="acceptResult" hidden></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const token = localStorage.getItem("civix_customer_token");
+const rfqId = new URLSearchParams(location.search).get("id");
+if (!token) window.location.href = "/customer-auth.html";
+if (!rfqId) window.location.href = "/my-rfqs.html";
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const authHeaders = { Authorization: `Bearer ${token}` };
+let acceptingId = null;
+
+function render({ rfq, quotes }) {
+  const root = $("#root");
+  const closed = rfq.status !== "open";
+  const items = rfq.rfq_items || [];
+
+  const head = `
+    <h1>Compare quotes</h1>
+    <p class="lead">📍 ${esc(rfq.location)}, ${esc(rfq.city)} · ${closed ? "Closed" : "Open"}</p>`;
+
+  if (!quotes.length) {
+    root.innerHTML = head + `<div class="empty">No quotes yet. Nearby vendors have been notified, check back soon.</div>`;
+    return;
+  }
+
+  const cls = (q) => (q.is_lowest ? "is-lowest" : "");
+
+  const headerRow = quotes.map((q) => {
+    const v = q.vendors || {};
+    return `<th class="${cls(q)}">
+      ${q.is_lowest ? '<span class="tag-l1">LOWEST</span><br>' : ""}
+      <a href="/vendor.html?id=${esc(v.id)}">${esc(v.company_name)}</a> ${v.is_verified ? "✔" : ""}
+      <div class="v-meta">★ ${Number(v.rating || 0).toFixed(1)} · ${esc(v.city)}</div>
+    </th>`;
+  }).join("");
+
+  const itemRows = items.map((it) => `
+    <tr>
+      <td>${esc(it.material)}<small>${esc(it.quantity)}</small></td>
+      ${quotes.map((q) => {
+        const qi = (q.quote_items || []).find((x) => x.rfq_item_id === it.id);
+        return `<td class="${cls(q)}">${qi
+          ? `${qi.brand ? esc(qi.brand) + "<br>" : ""}<b>${inr(qi.unit_price)}</b> / unit<small>= ${inr(qi.line_total)}</small>`
+          : "—"}</td>`;
+      }).join("")}
+    </tr>`).join("");
+
+  const row = (label, fn) => `<tr><td>${label}</td>${quotes.map((q) => `<td class="${cls(q)}">${fn(q)}</td>`).join("")}</tr>`;
+
+  const actionCell = (q) => {
+    if (q.status === "accepted") return `<span class="st st--ok">Accepted ✓</span>`;
+    if (q.status === "rejected") return `<span class="st st--no">Not selected</span>`;
+    if (closed) return "";
+    return `<button class="btn btn--primary" data-accept="${q.id}">Accept quote</button>`;
+  };
+
+  root.innerHTML = head + `
+    <div class="table-wrap">
+      <table class="compare">
+        <thead><tr><th>Item</th>${headerRow}</tr></thead>
+        <tbody>
+          ${itemRows}
+          ${row("Delivery charge", (q) => inr(q.delivery_charge))}
+          ${row("Delivery in", (q) => `${q.delivery_days} day(s)`)}
+          ${row("Valid till", (q) => (q.valid_until ? new Date(q.valid_until).toLocaleDateString("en-IN") : "—"))}
+          ${row("Note", (q) => esc(q.note) || "—")}
+          <tr class="total"><td>Total</td>${quotes.map((q) => `<td class="${cls(q)}">${inr(q.total_amount)}</td>`).join("")}</tr>
+          ${row("", actionCell)}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function load() {
+  const res = await fetch(`/api/quotes/rfq/${rfqId}`, { headers: authHeaders, cache: "no-store" });
+  if (res.status === 401) { window.location.href = "/customer-auth.html"; return; }
+  const data = await res.json();
+  if (!res.ok) { $("#root").innerHTML = `<div class="empty">${esc(data.message || "Could not load")}</div>`; return; }
+  render(data);
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-accept]");
+  if (!btn) return;
+  acceptingId = btn.dataset.accept;
+  $("#acceptResult").hidden = true;
+  $("#acceptOverlay").hidden = false;
+});
+$("#acceptClose").addEventListener("click", () => { $("#acceptOverlay").hidden = true; });
+$("#acceptOverlay").addEventListener("click", (e) => { if (e.target.id === "acceptOverlay") e.target.hidden = true; });
+
+$("#acceptForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("#acceptSubmit");
+  btn.disabled = true;
+
+  const res = await fetch(`/api/quotes/accept/${acceptingId}`, {
+    method: "POST",
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ delivery_address: $("#acceptAddr").value.trim() }),
+  });
+  const data = await res.json();
+  btn.disabled = false;
+
+  const box = $("#acceptResult");
+  box.hidden = false;
+  box.textContent = res.ok ? "Order confirmed! The vendor will contact you shortly." : (data.message || "Something went wrong");
+  box.style.background = res.ok ? "" : "#FEE2E2";
+  box.style.color = res.ok ? "" : "#B91C1C";
+
+  if (res.ok) setTimeout(() => { window.location.href = "/orders.html?as=buyer"; }, 1500);
+});
+
+load();
+</script>
+</body>
+</html>
