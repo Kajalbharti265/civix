@@ -10,6 +10,8 @@ const state = { city: "all", category: "all", search: "" };
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
 function waLink(phone, name) {
   const msg = encodeURIComponent(`Hi ${name}, I found your listing on Civix. I need a quote for my site.`);
   return `https://wa.me/91${phone}?text=${msg}`;
@@ -17,79 +19,31 @@ function waLink(phone, name) {
 
 function vendorCardHTML(v) {
   const cat = CATEGORY_MAP[v.category];
-  const initials = v.company_name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const initials = esc(String(v.company_name).split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase());
   return `
-  <article class="vendor-card" style="cursor:pointer;" onclick="if(!event.target.closest('a,button')) window.location.href='/vendor.html?id=${v.id}'">
+  <article class="vendor-card" style="cursor:pointer;" onclick="if(!event.target.closest('a,button')) window.location.href='/vendor.html?id=${esc(v.id)}'">
     <div class="vendor-card__banner"></div>
     <div class="vendor-card__body">
       <div class="vendor-card__top">
         ${v.logo_url
-          ? `<img class="vendor-card__avatar" src="${v.logo_url}" alt="${v.company_name}">`
+          ? `<img class="vendor-card__avatar" src="${esc(v.logo_url)}" alt="${esc(v.company_name)}">`
           : `<div class="vendor-card__avatar">${initials}</div>`}
         <div class="vendor-card__title-wrap">
-          <p class="vendor-card__name">${v.company_name}
+          <p class="vendor-card__name">${esc(v.company_name)}
             ${v.is_verified ? '<span class="verified-badge" title="Verified">✔</span>' : ""}
           </p>
-          <p class="vendor-card__meta">${v.role} • ${cat ? cat.emoji + " " + cat.label : v.category} • ${v.city}</p>
+          <p class="vendor-card__meta">${esc(v.role)} • ${cat ? cat.emoji + " " + cat.label : esc(v.category)} • ${esc(v.city)}</p>
         </div>
         <span class="rating"><span class="rating__star">★</span>${Number(v.rating).toFixed(1)}</span>
       </div>
-      ${v.materials ? `<div class="vendor-card__materials">${v.materials}</div>` : ""}
+      ${v.materials ? `<div class="vendor-card__materials">${esc(v.materials)}</div>` : ""}
       <div class="vendor-card__actions">
-        <a class="action-btn action-btn--call" href="tel:+91${v.phone}">📞 Call</a>
-        <a class="action-btn action-btn--whatsapp" target="_blank" href="${waLink(v.phone, v.company_name)}">💬 WhatsApp</a>
+        <a class="action-btn action-btn--call" href="tel:+91${esc(v.phone)}">📞 Call</a>
+        <a class="action-btn action-btn--whatsapp" target="_blank" rel="noopener" href="${waLink(esc(v.phone), v.company_name)}">💬 WhatsApp</a>
       </div>
     </div>
-    <button class="vendor-card__review-link" data-review-vendor="${v.id}" data-review-name="${v.company_name}">Write a review</button>
   </article>`;
 }
-// ---- star picker ----
-let selectedRating = 0;
-$$("#starPicker span").forEach((star) => {
-  star.addEventListener("click", () => {
-    selectedRating = Number(star.dataset.value);
-    $("#ratingInput").value = selectedRating;
-    $$("#starPicker span").forEach((s) => {
-      s.classList.toggle("is-filled", Number(s.dataset.value) <= selectedRating);
-    });
-  });
-});
-
-// ---- open review modal (event delegation, kyunki cards dynamically bante hain) ----
-$("#vendorGrid").addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-review-vendor]");
-  if (!btn) return;
-  $("#reviewVendorId").value = btn.dataset.reviewVendor;
-  $("#reviewVendorName").textContent = `Rate ${btn.dataset.reviewName}`;
-  selectedRating = 0;
-  $("#ratingInput").value = "";
-  $$("#starPicker span").forEach((s) => s.classList.remove("is-filled"));
-  openModal("reviewOverlay");
-});
-
-// ---- submit review ----
-$("#reviewForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (!selectedRating) { alert("Please select a rating"); return; }
-
-  const form = e.target;
-  const vendorId = $("#reviewVendorId").value;
-  const payload = Object.fromEntries(new FormData(form).entries());
-
-  const res = await fetch(`/api/vendors/${vendorId}/reviews`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json();
-
-  const box = $("#reviewResult");
-  box.hidden = false;
-  box.textContent = data.message || "Review submitted!";
-  form.reset();
-  loadVendors();
-  setTimeout(() => { closeModal("reviewOverlay"); box.hidden = true; }, 2000);
-});
 
 // ---- use my current location -> nearest supported city ----
 const SUPPORTED_CITIES = ["Indore", "Bhopal", "Jabalpur", "Gwalior"];
@@ -210,55 +164,112 @@ $("#becomeVendorBtn").addEventListener("click", () => openModal("vendorOverlay")
 $$("[data-close]").forEach((btn) => btn.addEventListener("click", () => closeModal(btn.dataset.close)));
 $$(".modal-overlay").forEach((ov) => ov.addEventListener("click", (e) => { if (e.target === ov) ov.hidden = true; }));
 
-// ---- add/remove item rows ----
-$("#addItemBtn")?.addEventListener("click", () => {
-  const row = document.createElement("div");
-  row.className = "rfq-item-row";
-  row.innerHTML = `
-    <input type="text" class="item-material" placeholder="e.g. TMT Steel bars" required>
-    <input type="text" class="item-quantity" placeholder="Qty" required>
-    <button type="button" class="remove-item">✕</button>
-  `;
-  $("#rfqItemsList").appendChild(row);
-  row.querySelector(".remove-item").addEventListener("click", () => row.remove());
+// ---- RFQ: catalog se items ----
+const UNITS = ["Bags", "MT", "Kg", "Nos", "Sq ft", "Cum", "Meters", "Hours", "Days", "Trips", "Sets", "Coils"];
+const catalogByName = {};
+
+async function loadCatalog() {
+  try {
+    const res = await fetch("/api/catalog");
+    const data = await res.json();
+    (data.products || []).forEach((p) => { catalogByName[p.name.toLowerCase()] = p; });
+    $("#catalogList").innerHTML = (data.products || [])
+      .map((p) => `<option value="${esc(p.name)}"></option>`)
+      .join("");
+  } catch (e) {
+    // catalog na mile to bhi free text se kaam chalega
+  }
+}
+
+function rfqRowHTML(removable) {
+  return `
+    <div class="rfq-item-row">
+      <input type="text" class="item-material" list="catalogList" maxlength="120"
+             placeholder="Search item, e.g. OPC 53 Cement" required>
+      <input type="number" class="item-qty" min="0.01" step="any" placeholder="Qty" required>
+      <select class="item-unit">${UNITS.map((u) => `<option>${u}</option>`).join("")}</select>
+      ${removable ? '<button type="button" class="remove-item">✕</button>' : ""}
+    </div>`;
+}
+
+function resetItems() {
+  $("#rfqItemsList").innerHTML = rfqRowHTML(false);
+}
+
+// catalog ka item chunte hi unit apne aap set ho jaaye
+$("#rfqItemsList").addEventListener("input", (e) => {
+  if (!e.target.classList.contains("item-material")) return;
+  const row = e.target.closest(".rfq-item-row");
+  const product = catalogByName[e.target.value.trim().toLowerCase()];
+  if (product) {
+    row.dataset.productId = product.id;
+    row.querySelector(".item-unit").value = product.unit;
+  } else {
+    delete row.dataset.productId;
+  }
+});
+
+$("#rfqItemsList").addEventListener("click", (e) => {
+  if (e.target.classList.contains("remove-item")) e.target.closest(".rfq-item-row").remove();
+});
+
+$("#addItemBtn").addEventListener("click", () => {
+  $("#rfqItemsList").insertAdjacentHTML("beforeend", rfqRowHTML(true));
 });
 
 $("#rfqForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
 
-  const items = Array.from(document.querySelectorAll(".rfq-item-row")).map((row) => ({
-    material: row.querySelector(".item-material").value.trim(),
-    quantity: row.querySelector(".item-quantity").value.trim(),
-  })).filter((i) => i.material && i.quantity);
+  const items = [...document.querySelectorAll(".rfq-item-row")]
+    .map((row) => ({
+      product_id: row.dataset.productId || null,
+      material: row.querySelector(".item-material").value.trim(),
+      qty: parseFloat(row.querySelector(".item-qty").value),
+      unit: row.querySelector(".item-unit").value,
+    }))
+    .filter((i) => i.material && i.qty > 0);
 
-  if (!items.length) { alert("Please add at least one item"); return; }
+  if (!items.length) { alert("Please add at least one item with quantity"); return; }
 
-  const payload = {
-    items,
-    city: form.city.value,
-    location: form.location.value,
-    phone: form.phone.value,
-  };
-
-  const headers = { "Content-Type": "application/json" };
-    const customerToken = localStorage.getItem("civix_customer_token");
+  const customerToken = localStorage.getItem("civix_customer_token");
   if (!customerToken) {
     alert("Please login first so you can receive and compare vendor quotes.");
     window.location.href = "/customer-auth.html";
     return;
   }
-  headers["Authorization"] = `Bearer ${customerToken}`;
 
-  const res = await fetch("/api/rfq", { method: "POST", headers, body: JSON.stringify(payload) });
+  const res = await fetch("/api/rfq", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${customerToken}` },
+    body: JSON.stringify({
+      items,
+      city: form.city.value,
+      location: form.location.value.trim(),
+      phone: form.phone.value.trim(),
+    }),
+  });
+
+  if (res.status === 401) {
+    localStorage.removeItem("civix_customer_token");
+    alert("Your session expired. Please login again.");
+    window.location.href = "/customer-auth.html";
+    return;
+  }
+
   const data = await res.json();
   const box = $("#rfqResult");
   box.hidden = false;
-  box.textContent = data.message || "Requirement posted!";
-  form.reset();
-  document.querySelectorAll(".rfq-item-row:not(:first-child)").forEach((r) => r.remove());
-  loadVendors();
-  setTimeout(() => { closeModal("rfqOverlay"); box.hidden = true; }, 2200);
+  box.textContent = data.message || "Something went wrong";
+  box.style.background = res.ok ? "" : "#FEE2E2";
+  box.style.color = res.ok ? "" : "#B91C1C";
+
+  if (res.ok) {
+    form.reset();
+    resetItems();
+    loadVendors();
+    setTimeout(() => { closeModal("rfqOverlay"); box.hidden = true; }, 2200);
+  }
 });
 
 $("#vendorForm").addEventListener("submit", async (e) => {
@@ -273,6 +284,7 @@ $("#vendorForm").addEventListener("submit", async (e) => {
   form.reset();
   setTimeout(() => { closeModal("vendorOverlay"); box.hidden = true; }, 2500);
 });
+
 // ---- footer: "List your business" link ----
 $("#footerListBusiness")?.addEventListener("click", (e) => {
   e.preventDefault();
@@ -292,4 +304,6 @@ $$("[data-footer-city]").forEach((link) => {
   });
 });
 
+resetItems();
+loadCatalog();
 loadVendors();

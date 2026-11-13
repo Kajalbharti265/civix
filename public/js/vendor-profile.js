@@ -68,21 +68,18 @@ async function loadProfile() {
         : reviews.map(r => `
           <div class="review-item">
             <div class="review-item__top">
-              <span class="review-item__name">${r.customer_name}</span>
+            <span class="review-item__name">${r.customer_name}${r.verified ? ' <small style="color:#22A559;font-weight:600">✔ Verified buyer</small>' : ""}</span>
               <span class="review-item__stars">${starsHTML(r.rating)}</span>
             </div>
             ${r.comment ? `<p class="review-item__comment">${r.comment}</p>` : ""}
             <span class="review-item__date">${new Date(r.created_at).toLocaleDateString()}</span>
           </div>
         `).join("")}
-      <button class="write-review-btn" id="openReviewBtn">Write a review</button>
+        <p class="no-reviews">Only verified buyers can review, after their order is delivered. <a href="/orders.html?as=buyer">My orders →</a></p>
     </div>
   `;
 
-  document.getElementById("openReviewBtn").addEventListener("click", () => {
-    $("#reviewVendorName").textContent = `Rate ${v.company_name}`;
-    openModal("reviewOverlay");
-  });
+  
 }
 
 // ---- review modal logic (same as main.js) ----

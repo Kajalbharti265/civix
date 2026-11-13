@@ -5,7 +5,8 @@ const ORDER_SELECT = `
   vendors(id, company_name, phone, city, logo_url, is_verified),
   rfqs(id, location, city, phone, rfq_items(id, material, quantity)),
   quotes(delivery_days, delivery_charge, note, quote_items(rfq_item_id, brand, unit_price, line_total)),
-  order_events(id, status, note, created_at)
+  order_events(id, status, note, created_at),
+  reviews(id, rating)
 `;
 
 // kaun kya status change kar sakta hai
