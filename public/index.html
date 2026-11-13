@@ -79,12 +79,8 @@
     <h3 class="modal__title">Post your site need</h3>
     <form id="rfqForm">
       <label>Items required</label>
-      <div id="rfqItemsList">
-        <div class="rfq-item-row">
-          <input type="text" class="item-material" placeholder="e.g. 500 Bags Cement" required>
-          <input type="text" class="item-quantity" placeholder="Qty (e.g. 500 Bags)" required>
-        </div>
-      </div>
+      <datalist id="catalogList"></datalist>
+      <div id="rfqItemsList"></div>
       <button type="button" class="btn-add-item" id="addItemBtn">+ Add another item</button>
 
       <label>City
