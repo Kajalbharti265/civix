@@ -84,7 +84,7 @@ export const postRFQ = async (req, res) => {
     // us city ke approved vendors me se jinki category kisi item se match kare
     const { data: cityVendors, error: vendorError } = await supabase
       .from("vendors")
-      .select("id, company_name, category")
+      .select("id, company_name, category, auth_user_id, email")
       .eq("city", city)
       .eq("is_approved", true);
     if (vendorError) return res.status(500).json({ message: vendorError.message });
@@ -118,6 +118,16 @@ export const postRFQ = async (req, res) => {
       await supabase.from("rfqs").delete().eq("id", rfq.id); // adhura RFQ mat chhodo
       return res.status(500).json({ message: itemsError.message });
     }
+        matched.slice(0, 50).forEach((v) =>
+      notify({
+        userId: v.auth_user_id,
+        email: v.email,
+        type: "rfq_new",
+        title: `New requirement in ${city}`,
+        body: `${cleaned.map((i) => `${i.material} (${i.quantity})`).join(", ")} · ${String(location).trim()}`,
+        link: "/vendor-quotes.html",
+      })
+    );
 
     res.status(201).json({
       message: `Requirement posted! ${matched.length} nearby vendor(s) can now see it and send quotes.`,

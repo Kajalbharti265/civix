@@ -12,6 +12,7 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/api/vendors/:vendorId/reviews", reviewRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/catalog", catalogRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ---- test route ----
 app.get("/api/public-config", (req, res) => {
