@@ -16,8 +16,8 @@ async function sendEmail({ to, subject, text, link }) {
         htmlContent: `<div style="font-family:Arial,sans-serif;max-width:520px">
           <h2 style="margin:0 0 8px">${esc(subject)}</h2>
           <p style="color:#4C5A68">${esc(text)}</p>
-          <p><a href="${esc(base + link)}" style="background:#FF5A1F;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Open on Civix</a></p>
-        </div>`,
+          ${base ? `<p><a href="${esc(base + link)}" style="...">Open on Civix</a></p>` : ""}
+          </div>`,
       },
       { headers: { "api-key": process.env.BREVO_API_KEY, "Content-Type": "application/json" }, timeout: 8000 }
     );

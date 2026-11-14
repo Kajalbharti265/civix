@@ -102,6 +102,26 @@ export const updateOrderStatus = async (req, res) => {
       status,
       note: `By ${actor}${note ? ": " + note : ""}`,
     });
+        const no = order.order_no ? `CVX-${1000 + Number(order.order_no)}` : String(order.id).slice(0, 8).toUpperCase();
+    if (actor === "vendor") {
+      notify({
+        userId: order.customer_id,
+        type: "order_update",
+        title: `Order ${no} ${status}`,
+        body: note || (status === "delivered" ? "Delivered! Please rate the vendor." : `Your order is now ${status}.`),
+        link: "/orders.html?as=buyer",
+      });
+    } else {
+      const { data: v } = await supabase.from("vendors").select("auth_user_id, email").eq("id", order.vendor_id).maybeSingle();
+      notify({
+        userId: v?.auth_user_id,
+        email: v?.email,
+        type: "order_update",
+        title: `Order ${no} ${status} by customer`,
+        body: note || "The customer cancelled this order.",
+        link: "/orders.html?as=vendor",
+      });
+    }
 
     res.json({ message: `Order marked as ${status}`, order: updated });
   } catch (err) {

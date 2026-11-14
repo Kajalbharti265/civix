@@ -351,3 +351,6 @@ a.btn{text-decoration:none; display:inline-flex; align-items:center; justify-con
 .faq details{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:10px;}
 .faq summary{cursor:pointer; font-weight:600; font-size:14px;}
 .faq details p{margin:10px 0 0; color:var(--ink-600); font-size:13px; line-height:1.6;}
+.bell{position:relative; font-size:18px; text-decoration:none; padding:6px 8px; line-height:1;}
+.bell__badge{position:absolute; top:-2px; right:-2px; background:var(--signal-orange); color:#fff; font-family:'Inter',sans-serif; font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 4px;}
+.bell__badge[hidden]{display:none;}
