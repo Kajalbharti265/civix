@@ -307,3 +307,22 @@ $$("[data-footer-city]").forEach((link) => {
 resetItems();
 loadCatalog();
 loadVendors();
+// ---- homepage: quick requirement + CTAs ----
+function openRfqWith(name) {
+  resetItems();
+  const row = document.querySelector(".rfq-item-row");
+  const input = row.querySelector(".item-material");
+  input.value = name;
+  input.dispatchEvent(new Event("input", { bubbles: true })); // product + unit auto-set
+  openModal("rfqOverlay");
+  row.querySelector(".item-qty").focus();
+}
+
+$("#heroPostBtn")?.addEventListener("click", () => { resetItems(); openModal("rfqOverlay"); });
+$("#ctaListBtn")?.addEventListener("click", () => openModal("vendorOverlay"));
+$$("[data-quick]").forEach((b) => b.addEventListener("click", () => openRfqWith(b.dataset.quick)));
+
+fetch("/api/vendors?city=all&category=all&search=")
+  .then((r) => r.json())
+  .then((d) => { const el = $("#statVendors"); if (el) el.textContent = d.count ?? 0; })
+  .catch(() => {});

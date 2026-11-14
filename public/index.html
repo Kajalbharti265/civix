@@ -39,13 +39,36 @@
 
 <section class="hero">
   <div class="hero__stripe"></div>
-  <div class="hero__inner">
-    <p class="hero__eyebrow">HARDWARE · MATERIALS · CONTRACTORS</p>
-    <h1 class="hero__title">Everything for your <span>construction site</span>,<br>sourced nearby.</h1>
-    <div class="searchbar">
-      <span class="searchbar__icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search cement, TMT steel, contractors, JCB…">
+  <div class="hero__inner hero__inner--wide">
+    <div class="hero__copy">
+      <p class="hero__eyebrow">CEMENT · TMT STEEL · CONTRACTORS · MACHINERY</p>
+      <h1 class="hero__title">Post your requirement. <span>Compare vendor quotes.</span> Order at the best rate.</h1>
+      <p class="hero__sub">Madhya Pradesh ke verified suppliers aur contractors se seedha rate lo. Bina chakkar, bina bargaining.</p>
+      <div class="hero__cta">
+        <button class="btn btn--primary btn--lg" id="heroPostBtn">Post requirement — free</button>
+        <a class="btn btn--ghost-light btn--lg" href="#directory">Browse vendors</a>
+      </div>
+      <div class="searchbar">
+        <span class="searchbar__icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search cement, TMT steel, contractors, JCB…">
+      </div>
     </div>
+    <aside class="hero__panel">
+      <p class="panel__title">POPULAR REQUIREMENTS</p>
+      <div class="quick-grid">
+        <button data-quick="OPC 53 Grade Cement">🏭 OPC 53 Cement</button>
+        <button data-quick="TMT Bars Fe500D 12mm">⛓️ TMT 12mm</button>
+        <button data-quick="JCB / Backhoe Loader">🚜 JCB rental</button>
+        <button data-quick="Civil Contractor (labour + material)">👷 Civil contractor</button>
+        <button data-quick="PVC Pipes">🔧 PVC pipes</button>
+        <button data-quick="Concrete Mixer">🚜 Concrete mixer</button>
+      </div>
+      <div class="panel__stats">
+        <div><b id="statVendors">—</b><span>Vendors</span></div>
+        <div><b>4</b><span>Cities</span></div>
+        <div><b>5</b><span>Categories</span></div>
+      </div>
+    </aside>
   </div>
 </section>
 
@@ -58,7 +81,7 @@
   <button class="chip" data-category="plumbing_electrical"><span>🔧</span>Plumbing/Electrical</button>
 </nav>
 
-<main class="results">
+<main class="results" id="directory">
   <div class="results__head">
     <h2 id="resultsTitle">All vendors</h2>
     <span class="results__count" id="resultsCount"></span>
@@ -69,6 +92,52 @@
     <span>Post your requirement below — nearby suppliers will be notified.</span>
   </div>
 </main>
+<section class="band">
+  <div class="band__inner">
+    <p class="band__eyebrow">HOW IT WORKS</p>
+    <h2 class="band__title">Requirement se delivery tak, 4 steps me</h2>
+    <div class="steps4">
+      <div class="s4"><span class="s4__no">01</span><h3>Post requirement</h3><p>Item, quantity aur site location batao. Free hai.</p></div>
+      <div class="s4"><span class="s4__no">02</span><h3>Vendors quote bhejte hain</h3><p>Aapki city ke verified vendors apna rate, brand aur delivery time bhejte hain.</p></div>
+      <div class="s4"><span class="s4__no">03</span><h3>Compare karo</h3><p>Side-by-side table me sabse sasta rate (LOWEST) turant dikhta hai.</p></div>
+      <div class="s4"><span class="s4__no">04</span><h3>Order aur track karo</h3><p>Quote accept karo, order ka status Confirmed se Delivered tak track karo.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band band--tint">
+  <div class="band__inner">
+    <p class="band__eyebrow">WHY CIVIX</p>
+    <h2 class="band__title">Local vendors, seedha rate</h2>
+    <div class="why4">
+      <div class="why"><div class="why__icon">✔️</div><h3>Verified vendors</h3><p>Har vendor admin approval ke baad hi list hota hai, aur blue tick verified ko milta hai.</p></div>
+      <div class="why"><div class="why__icon">🏗️</div><h3>Sab ek jagah</h3><p>Material, contractors aur machinery rental, teeno ek hi platform pe.</p></div>
+      <div class="why"><div class="why__icon">📍</div><h3>City-wise</h3><p>Indore, Bhopal, Jabalpur, Gwalior ke vendors, aapke site ke paas.</p></div>
+      <div class="why"><div class="why__icon">⭐</div><h3>Sachche reviews</h3><p>Review sirf wahi de sakta hai jiska order deliver ho chuka ho.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band band--dark">
+  <div class="band__inner cta-band">
+    <div>
+      <h2>Vendor ho? Naye orders pao.</h2>
+      <p>Apna business Civix pe list karo, apni city ke customers ki requirements dekho aur seedha quote bhejo.</p>
+    </div>
+    <button class="btn btn--primary btn--lg" id="ctaListBtn">List your business</button>
+  </div>
+</section>
+
+<section class="band">
+  <div class="band__inner faq">
+    <p class="band__eyebrow">FAQ</p>
+    <h2 class="band__title">Aksar pooche jaane wale sawaal</h2>
+    <details><summary>Kya requirement post karna free hai?</summary><p>Haan, buyers ke liye requirement post karna aur quotes dekhna free hai.</p></details>
+    <details><summary>Kaun se shehron me Civix chalta hai?</summary><p>Abhi Indore, Bhopal, Jabalpur aur Gwalior me.</p></details>
+    <details><summary>Vendor verified kaise hota hai?</summary><p>Admin vendor ki details check karke approve karta hai, aur verified vendors ko blue tick milta hai.</p></details>
+    <details><summary>Payment kaise hota hai?</summary><p>Abhi platform pe online payment nahi hai. Payment aur delivery ki baat order accept hone ke baad vendor se seedha tay hoti hai.</p></details>
+  </div>
+</section>
 
 <button class="fab" id="postNeedFab"><span class="fab__plus">+</span> Post Site Need</button>
 

@@ -8,4 +8,4 @@ router.get("/my", requireUserAuth, getBuyerOrders);
 router.get("/vendor", requireUserAuth, getVendorOrders);
 router.patch("/:id/status", requireUserAuth, updateOrderStatus);
 
-export default router;
+export default router; 
